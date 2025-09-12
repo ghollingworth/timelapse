@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raspberry Pi Timelapse Controller</title>
+    <!-- Font Awesome icons replaced with Unicode symbols for privacy -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .main-tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #4a4a6a;
+            gap: 0;
+        }
+
+        .main-tab {
+            padding: 15px 30px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            color: #b0b0b0;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 140px;
+            justify-content: center;
+        }
+
+        .main-tab:hover {
+            color: #7c9aff;
+            background: rgba(124, 154, 255, 0.1);
+        }
+
+        .main-tab.active {
+            color: #7c9aff;
+            border-bottom-color: #7c9aff;
+            background: rgba(124, 154, 255, 0.1);
+        }
+
+        .main-tab-content {
+            display: none;
+        }
+
+        .main-tab-content.active {
+            display: block;
+        }
+
+        .card {
+            background: #2d2d44;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            border: 1px solid #3a3a5c;
+        }
+
+        .card h2 {
+            color: #7c9aff;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #b0b0b0;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #4a4a6a;
+            border-radius: 8px;
+            font-size: 16px;
+            background: #3a3a5c;
+            color: #e0e0e0;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #7c9aff;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #7c9aff 0%, #6366f1 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(124, 154, 255, 0.4);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
+            color: white;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(78, 205, 196, 0.4);
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-running {
+            background: #4ecdc4;
+            animation: pulse 2s infinite;
+        }
+
+        .status-stopped {
+            background: #ff6b6b;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .media-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .media-item {
+            background: #3a3a5c;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid #4a4a6a;
+        }
+
+        .media-item img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .media-info {
+            padding: 15px;
+        }
+
+        .media-info h3 {
+            font-size: 14px;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .media-info p {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #4a4a6a;
+        }
+
+        .tab {
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            color: #b0b0b0;
+            transition: all 0.3s ease;
+        }
+
+        .tab.active {
+            color: #7c9aff;
+            border-bottom: 3px solid #7c9aff;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #b0b0b0;
+        }
+
+        .error {
+            background: #4a2c2c;
+            color: #ff7675;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #ff7675;
+            border: 1px solid #5a3535;
+        }
+
+        .success {
+            background: #2c4a2c;
+            color: #55efc4;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #55efc4;
+            border: 1px solid #355a35;
+        }
+
+        @media (max-width: 768px) {
+            .main-tabs {
+                flex-direction: column;
+                gap: 0;
+            }
+            
+            .main-tab {
+                min-width: auto;
+                padding: 12px 20px;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📷 Raspberry Pi Timelapse</h1>
+            <p>Control your timelapse camera and view captured media</p>
+        </div>
+
+        <!-- Main Navigation Tabs -->
+        <div class="main-tabs">
+            <button class="main-tab active" onclick="switchMainTab('controls')">
+                🎛️ Controls
+            </button>
+            <button class="main-tab" onclick="switchMainTab('settings')">
+                ⚙️ Settings  
+            </button>
+            <button class="main-tab" onclick="switchMainTab('media')">
+                📁 Media
+            </button>
+        </div>
+
+        <!-- Controls Tab -->
+        <div id="controls-tab" class="main-tab-content active">
+            <div class="card">
+                <h2>🎛️ Control Panel</h2>
+                
+                <div id="status-display">
+                    <p><span class="status-indicator status-stopped"></span>Status: <span id="status-text">Stopped</span></p>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn btn-success" onclick="startTimelapse()">
+                        ▶️ Start
+                    </button>
+                    <button class="btn btn-danger" onclick="stopTimelapse()">
+                        ⏹️ Stop
+                    </button>
+                    <button class="btn btn-primary" onclick="captureSingle()">
+                        📷 Single Shot
+                    </button>
+                </div>
+                
+                <hr style="margin: 25px 0; border: none; border-top: 1px solid #4a4a6a;">
+                
+                <h3 style="color: #7c9aff; margin-bottom: 15px;">Manual Video & Image Management</h3>
+                
+                <div class="button-group">
+                    <button class="btn btn-success" onclick="generateVideo()">
+                        🎬 Generate Video
+                    </button>
+                    <button class="btn btn-danger" onclick="deleteImages()">
+                        🗑️ Delete Images
+                    </button>
+                </div>
+
+                <div id="message-area"></div>
+            </div>
+
+            <!-- Daily Video Status Panel -->
+            <div class="card">
+                <h2>⏰ Daily Video Schedule</h2>
+                
+                <div id="daily-video-status" style="margin-bottom: 20px; padding: 15px; background: #3a3a5c; border-radius: 8px; border-left: 4px solid #7c9aff; border: 1px solid #4a4a6a;">
+                    <p><strong>Scheduled Video Creation:</strong> <span id="video-creation-status">Disabled</span></p>
+                    <p><strong>Daily Video Time:</strong> <span id="current-video-time">18:00</span></p>
+                    <p id="video-creation-description">Enable "Scheduled Video Creation" in settings to automatically create daily videos.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Tab -->
+        <div id="settings-tab" class="main-tab-content">
+            <div class="card">
+                <h2>⚙️ Settings</h2>
+                
+                <form id="settings-form">
+                    <div class="form-group">
+                        <label for="interval">Interval (seconds between shots)</label>
+                        <input type="number" id="interval" name="interval" min="1" max="3600" value="{{ config.interval }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="resolution">Video Output Resolution</label>
+                        <select id="resolution" name="resolution">
+                            <option value="1920x1080" {% if config.resolution == '1920x1080' %}selected{% endif %}>1920x1080 (Full HD)</option>
+                            <option value="1280x720" {% if config.resolution == '1280x720' %}selected{% endif %}>1280x720 (HD)</option>
+                            <option value="640x480" {% if config.resolution == '640x480' %}selected{% endif %}>640x480 (VGA)</option>
+                        </select>
+                        <small style="color: #b0b0b0; font-size: 0.9em; margin-top: 5px; display: block;">
+                            Images are captured at sensor's native resolution, videos are encoded at this resolution
+                        </small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="quality">Quality (%)</label>
+                        <input type="number" id="quality" name="quality" min="1" max="100" value="{{ config.quality }}">
+                    </div>
+
+                    <hr style="margin: 25px 0; border: none; border-top: 1px solid #4a4a6a;">
+                    
+                    <h3 style="color: #7c9aff; margin-bottom: 15px;">Image Orientation Settings</h3>
+                    
+                    <div class="form-group">
+                        <label for="hflip">
+                            <input type="checkbox" id="hflip" name="hflip" value="true"
+                                   {% if config.hflip %}checked{% endif %} style="margin-right: 8px;">
+                            Horizontal flip (mirror image)
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="vflip">
+                            <input type="checkbox" id="vflip" name="vflip" value="true"
+                                   {% if config.vflip %}checked{% endif %} style="margin-right: 8px;">
+                            Vertical flip (upside down)
+                        </label>
+                    </div>
+
+                    <hr style="margin: 25px 0; border: none; border-top: 1px solid #4a4a6a;">
+                    
+                    <h3 style="color: #7c9aff; margin-bottom: 15px;">Video Generation Settings</h3>
+                    
+                    <div class="form-group">
+                        <label for="auto_generate_video">
+                            <input type="checkbox" id="auto_generate_video" name="auto_generate_video" value="true"
+                                   {% if config.auto_generate_video %}checked{% endif %} style="margin-right: 8px;">
+                            Automatically generate video when recording stops
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="auto_delete_images">
+                            <input type="checkbox" id="auto_delete_images" name="auto_delete_images" value="true"
+                                   {% if config.auto_delete_images %}checked{% endif %} style="margin-right: 8px;">
+                            Automatically delete images after video generation
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="video_fps">Video FPS</label>
+                        <input type="number" id="video_fps" name="video_fps" min="1" max="60" value="{{ config.video_fps or 30 }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="video_quality">Video Quality (lower = better for FFmpeg)</label>
+                        <input type="number" id="video_quality" name="video_quality" min="1" max="51" value="{{ config.video_quality or 23 }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="video_method">Video Generation Method</label>
+                        <select id="video_method" name="video_method">
+                            <option value="ffmpeg" {% if config.video_method == 'ffmpeg' %}selected{% endif %}>FFmpeg (Recommended)</option>
+                            <option value="opencv" {% if config.video_method == 'opencv' %}selected{% endif %}>OpenCV</option>
+                        </select>
+                    </div>
+
+                    <hr style="margin: 25px 0; border: none; border-top: 1px solid #4a4a6a;">
+                    
+                    <h3 style="color: #7c9aff; margin-bottom: 15px;">Daily Video Creation</h3>
+                    
+                    <div class="form-group">
+                        <label for="scheduled_video_creation">
+                            <input type="checkbox" id="scheduled_video_creation" name="scheduled_video_creation" value="true"
+                                   {% if config.scheduled_video_creation %}checked{% endif %} style="margin-right: 8px;">
+                            Enable Daily Video Creation
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="daily_video_time">Daily Video Creation Time</label>
+                        <input type="time" id="daily_video_time" name="daily_video_time" value="{{ config.daily_video_time or '18:00' }}">
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">
+                        💾 Save Settings
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Media Tab -->
+        <div id="media-tab" class="main-tab-content">
+            <div class="card">
+                <h2>📁 Media Gallery</h2>
+                
+                <div class="tabs">
+                    <button class="tab active" onclick="switchTab('images')">Images</button>
+                    <button class="tab" onclick="switchTab('videos')">Videos</button>
+                </div>
+
+                <div id="images-tab" class="tab-content active">
+                    <div id="images-grid" class="media-grid">
+                        <div class="loading">Loading images...</div>
+                    </div>
+                </div>
+
+                <div id="videos-tab" class="tab-content">
+                    <div id="videos-grid" class="media-grid">
+                        <div class="loading">Loading videos...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentMainTab = 'controls';
+        let currentTab = 'images';
+        let statusInterval;
+        let mediaInterval;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadStatus();
+            loadImages();
+            loadVideos();
+            updateScheduleInterface();
+            
+            // Set up status polling
+            statusInterval = setInterval(loadStatus, 2000);
+            
+            // Set up form submissions
+            document.getElementById('settings-form').addEventListener('submit', saveSettings);
+            
+            // Handle page visibility changes
+            document.addEventListener('visibilitychange', function() {
+                if (document.hidden) {
+                    stopMediaPolling();
+                } else if (currentMainTab === 'media') {
+                    startMediaPolling();
+                }
+            });
+            
+            // Clean up intervals on page unload
+            window.addEventListener('beforeunload', function() {
+                if (statusInterval) clearInterval(statusInterval);
+                stopMediaPolling();
+            });
+        });
+
+        function updateScheduleInterface() {
+            // Update the daily video status display
+            const config = JSON.parse('{{ config|tojson|safe }}');
+            const scheduledVideoCreation = config.scheduled_video_creation || false;
+            const dailyVideoTime = config.daily_video_time || '18:00';
+            
+            const statusElement = document.getElementById('video-creation-status');
+            const timeElement = document.getElementById('current-video-time');
+            const descriptionElement = document.getElementById('video-creation-description');
+            
+            if (scheduledVideoCreation) {
+                statusElement.textContent = 'Enabled';
+                statusElement.style.color = '#4ecdc4';
+                timeElement.textContent = dailyVideoTime;
+                descriptionElement.textContent = 'Videos will be created daily at the specified time. Make sure the timelapse is running.';
+            } else {
+                statusElement.textContent = 'Disabled';
+                statusElement.style.color = '#ff6b6b';
+                timeElement.textContent = dailyVideoTime;
+                descriptionElement.textContent = 'Enable "Daily Video Creation" in settings to automatically create daily videos.';
+            }
+        }
+
+        function switchMainTab(tabName) {
+            // Update main tab buttons
+            document.querySelectorAll('.main-tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Update main tab content
+            document.querySelectorAll('.main-tab-content').forEach(content => content.classList.remove('active'));
+            document.getElementById(tabName + '-tab').classList.add('active');
+            
+            // Manage media polling based on active tab
+            if (tabName === 'media') {
+                startMediaPolling();
+            } else {
+                stopMediaPolling();
+            }
+            
+            currentMainTab = tabName;
+        }
+
+        function startMediaPolling() {
+            // Don't start if already running or page is hidden
+            if (mediaInterval || document.hidden) return;
+            
+            // Poll every 5 seconds when media tab is active
+            mediaInterval = setInterval(() => {
+                if (currentMainTab === 'media' && !document.hidden) {
+                    loadImages();
+                    loadVideos();
+                    showAutoRefreshIndicator();
+                }
+            }, 5000);
+            
+            console.log('Media auto-refresh started');
+        }
+
+        function showAutoRefreshIndicator() {
+            // Create or update a small indicator to show auto-refresh is working
+            let indicator = document.getElementById('auto-refresh-indicator');
+            if (!indicator) {
+                indicator = document.createElement('div');
+                indicator.id = 'auto-refresh-indicator';
+                indicator.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: rgba(124, 154, 255, 0.9);
+                    color: white;
+                    padding: 8px 12px;
+                    border-radius: 20px;
+                    font-size: 12px;
+                    z-index: 1000;
+                    opacity: 0;
+                    transition: opacity 0.3s ease;
+                    pointer-events: none;
+                `;
+                indicator.innerHTML = '🔄 Auto-refreshed';
+                document.body.appendChild(indicator);
+            }
+            
+            // Show indicator briefly
+            indicator.style.opacity = '1';
+            setTimeout(() => {
+                indicator.style.opacity = '0';
+            }, 1500);
+        }
+
+        function stopMediaPolling() {
+            if (mediaInterval) {
+                clearInterval(mediaInterval);
+                mediaInterval = null;
+                console.log('Media auto-refresh stopped');
+            }
+        }
+
+        function switchTab(tabName) {
+            // Update tab buttons (for media sub-tabs)
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Update tab content (for media sub-tabs)
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.getElementById(tabName + '-tab').classList.add('active');
+            
+            currentTab = tabName;
+        }
+
+        async function loadStatus() {
+            try {
+                const response = await fetch('/api/status');
+                const data = await response.json();
+                
+                const statusText = document.getElementById('status-text');
+                const statusIndicator = document.querySelector('.status-indicator');
+                
+                if (data.is_running) {
+                    statusText.textContent = 'Running';
+                    statusIndicator.className = 'status-indicator status-running';
+                } else {
+                    statusText.textContent = 'Stopped';
+                    statusIndicator.className = 'status-indicator status-stopped';
+                }
+            } catch (error) {
+                console.error('Error loading status:', error);
+            }
+        }
+
+        async function startTimelapse() {
+            try {
+                const response = await fetch('/api/start', { method: 'POST' });
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    showMessage(data.message, 'success');
+                    loadStatus();
+                } else {
+                    showMessage(data.message, 'error');
+                }
+            } catch (error) {
+                showMessage('Error starting timelapse: ' + error.message, 'error');
+            }
+        }
+
+        async function stopTimelapse() {
+            try {
+                const response = await fetch('/api/stop', { method: 'POST' });
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    showMessage(data.message, 'success');
+                    loadStatus();
+                } else {
+                    showMessage(data.message, 'error');
+                }
+            } catch (error) {
+                showMessage('Error stopping timelapse: ' + error.message, 'error');
+            }
+        }
+
+        async function captureSingle() {
+            try {
+                const response = await fetch('/api/capture', { method: 'POST' });
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    showMessage('Image captured successfully!', 'success');
+                    loadImages();
+                } else {
+                    showMessage(data.message, 'error');
+                }
+            } catch (error) {
+                showMessage('Error capturing image: ' + error.message, 'error');
+            }
+        }
+
+        async function saveSettings(event) {
+            event.preventDefault();
+            
+            const formData = new FormData(event.target);
+            const settings = {};
+            
+                        for (let [key, value] of formData.entries()) {
+                // Handle checkbox values - convert string "true" to boolean true
+                if (key === 'auto_generate_video' || key === 'auto_delete_images' || 
+                    key === 'scheduled_video_creation' || key === 'hflip' || key === 'vflip') {
+                    settings[key] = value === 'true' || value === true;
+                } else {
+                    settings[key] = value;
+                }
+            }
+            
+            // Handle unchecked checkboxes
+            if (!formData.has('auto_generate_video')) {
+                settings.auto_generate_video = false;
+            }
+            if (!formData.has('auto_delete_images')) {
+                settings.auto_delete_images = false;
+            }
+            if (!formData.has('scheduled_video_creation')) {
+                settings.scheduled_video_creation = false;
+            }
+            if (!formData.has('hflip')) {
+                settings.hflip = false;
+            }
+            if (!formData.has('vflip')) {
+                settings.vflip = false;
+            }
+            
+            try {
+                const response = await fetch('/api/config', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(settings)
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    showMessage('Settings saved successfully!', 'success');
+                    updateScheduleInterface();
+                } else {
+                    showMessage('Error saving settings', 'error');
+                }
+            } catch (error) {
+                showMessage('Error saving settings: ' + error.message, 'error');
+            }
+        }
+
+        async function loadImages() {
+            try {
+                const response = await fetch('/api/images');
+                const images = await response.json();
+                
+                const grid = document.getElementById('images-grid');
+                
+                if (images.length === 0) {
+                    grid.innerHTML = '<div class="loading">No images found</div>';
+                    return;
+                }
+                
+                grid.innerHTML = images.map(image => `
+                    <div class="media-item">
+                        <img src="${image.url}" alt="${image.filename}" onclick="openImage('${image.url}')">
+                        <div class="media-info">
+                            <h3>${image.filename}</h3>
+                            <p>Size: ${formatFileSize(image.size)}</p>
+                            <p>Created: ${new Date(image.created).toLocaleString()}</p>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading images:', error);
+                document.getElementById('images-grid').innerHTML = '<div class="error">Error loading images</div>';
+            }
+        }
+
+        async function loadVideos() {
+            try {
+                const response = await fetch('/api/videos');
+                const videos = await response.json();
+                
+                const grid = document.getElementById('videos-grid');
+                
+                if (videos.length === 0) {
+                    grid.innerHTML = '<div class="loading">No videos found</div>';
+                    return;
+                }
+                
+                grid.innerHTML = videos.map(video => `
+                    <div class="media-item">
+                        <video width="100%" height="200" controls>
+                            <source src="${video.url}" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                        <div class="media-info">
+                            <h3>${video.filename}</h3>
+                            <p>Size: ${formatFileSize(video.size)}</p>
+                            <p>Created: ${new Date(video.created).toLocaleString()}</p>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading videos:', error);
+                document.getElementById('videos-grid').innerHTML = '<div class="error">Error loading videos</div>';
+            }
+        }
+
+        function showMessage(message, type) {
+            const messageArea = document.getElementById('message-area');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = type;
+            messageDiv.textContent = message;
+            
+            messageArea.innerHTML = '';
+            messageArea.appendChild(messageDiv);
+            
+            setTimeout(() => {
+                messageDiv.remove();
+            }, 5000);
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function openImage(url) {
+            window.open(url, '_blank');
+        }
+
+        async function generateVideo() {
+            try {
+                const response = await fetch('/api/generate-video', { method: 'POST' });
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    showMessage(data.message, 'success');
+                    loadVideos();
+                } else {
+                    showMessage(data.message, 'error');
+                }
+            } catch (error) {
+                showMessage('Error generating video: ' + error.message, 'error');
+            }
+        }
+
+        async function deleteImages() {
+            if (!confirm('Are you sure you want to delete ALL images? This action cannot be undone.')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/delete-images', { method: 'POST' });
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    showMessage(data.message, 'success');
+                    loadImages();
+                } else {
+                    showMessage(data.message, 'error');
+                }
+            } catch (error) {
+                showMessage('Error deleting images: ' + error.message, 'error');
+            }
+        }
+
+    </script>
+</body>
+</html> 

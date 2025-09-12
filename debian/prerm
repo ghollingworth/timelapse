@@ -1,0 +1,18 @@
+#!/bin/bash
+set -e
+
+case "$1" in
+    remove|deconfigure)
+        # Stop service (handled by debhelper)  
+        deb-systemd-invoke stop timelapse.service >/dev/null || true
+        ;;
+    upgrade)
+        # Don't stop service during upgrade
+        ;;
+    *)
+        ;;
+esac
+
+#DEBHELPER#
+
+exit 0

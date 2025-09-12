@@ -1,0 +1,36 @@
+Source: timelapse-controller
+Section: utils
+Priority: optional
+Maintainer: Gordon Hollingworth <gordon@raspberrypi.com>
+Build-Depends: debhelper (>= 12)
+Standards-Version: 4.6.0
+Homepage: https://github.com/ghollingworth/timelapse
+Rules-Requires-Root: no
+
+Package: timelapse-controller
+Architecture: all
+Depends: ${misc:Depends},
+         python3,
+         python3-flask,
+         python3-picamera2,
+         python3-opencv,
+         ffmpeg,
+         adduser
+Description: Raspberry Pi Timelapse Controller
+ Web application for creating timelapse videos with the Raspberry Pi camera.
+ .
+ Features include:
+  - Web-based control interface with three-tab layout
+  - Automatic video generation with FFmpeg or OpenCV
+  - Scheduled daily video creation
+  - Multiple video formats and resolutions (1080p, 720p, 480p)
+  - Real-time media gallery with auto-refresh
+  - Camera orientation controls (horizontal/vertical flip)
+  - Systemd service for automatic startup
+ .
+ The web interface is available at http://localhost:5000 after installation.
+ .
+ Use standard systemctl commands to control the service:
+  systemctl start/stop/restart timelapse.service
+  systemctl status timelapse.service  
+  journalctl -u timelapse -f

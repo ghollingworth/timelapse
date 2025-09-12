@@ -1,0 +1,63 @@
+#!/bin/bash
+set -e
+
+# Create timelapse user if it doesn't exist
+if ! getent passwd timelapse >/dev/null 2>&1; then
+    adduser --system --group --home /var/lib/timelapse --shell /usr/sbin/nologin timelapse
+    echo "Created timelapse system user"
+fi
+
+# Create data directories with proper permissions
+mkdir -p /var/lib/timelapse/{images,videos,config}
+chown timelapse:timelapse /var/lib/timelapse
+chown timelapse:timelapse /var/lib/timelapse/images
+chown timelapse:timelapse /var/lib/timelapse/videos  
+chown timelapse:timelapse /var/lib/timelapse/config
+chmod 755 /var/lib/timelapse
+chmod 755 /var/lib/timelapse/{images,videos,config}
+
+# Set application permissions (ownership handled by dpkg)
+chmod 755 /opt/timelapse
+chmod 644 /opt/timelapse/*.py
+chmod 755 /opt/timelapse/video_generator.py
+
+# Add timelapse user to video group for camera access
+usermod -a -G video timelapse
+
+# Create config file if it doesn't exist
+if [ ! -f /var/lib/timelapse/config/timelapse_config.json ]; then
+    cat > /var/lib/timelapse/config/timelapse_config.json << 'EOF'
+{
+    "interval": 5,
+    "resolution": "1920x1080",
+    "quality": 95,
+    "auto_generate_video": true,
+    "auto_delete_images": false,
+    "video_fps": 30,
+    "video_quality": 23,
+    "video_method": "ffmpeg",
+    "scheduled_video_creation": false,
+    "daily_video_time": "18:00",
+    "hflip": false,
+    "vflip": false,
+    "is_running": false
+}
+EOF
+    chown timelapse:timelapse /var/lib/timelapse/config/timelapse_config.json
+    chmod 644 /var/lib/timelapse/config/timelapse_config.json
+fi
+
+# Enable and start systemd service (handled by debhelper)
+if [ "$1" = "configure" ]; then
+    deb-systemd-helper enable timelapse.service >/dev/null || true
+    deb-systemd-invoke start timelapse.service >/dev/null || true
+fi
+
+echo "Timelapse Controller installed successfully!"
+echo "Web interface available at: http://localhost:5000"
+echo "Use 'systemctl status timelapse.service' to check service status"
+echo "Use 'journalctl -u timelapse -f' to view logs"
+
+#DEBHELPER#
+
+exit 0

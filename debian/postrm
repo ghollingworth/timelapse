@@ -1,0 +1,30 @@
+#!/bin/bash
+set -e
+
+case "$1" in
+    purge)
+        # Remove user and data on purge
+        if getent passwd timelapse >/dev/null 2>&1; then
+            deluser --quiet timelapse || true
+            echo "Removed timelapse user"
+        fi
+        
+        # Remove data directory only if explicitly requested via debconf
+        # For now, preserve data by default to prevent accidental loss
+        if [ -d /var/lib/timelapse ]; then
+            echo "Preserving timelapse data directory: /var/lib/timelapse"
+            echo "To remove manually: sudo rm -rf /var/lib/timelapse"
+        fi
+        
+        # Clean up systemd (handled by debhelper)
+        deb-systemd-helper purge timelapse.service >/dev/null || true
+        ;;
+    remove|upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)
+        ;;
+    *)
+        ;;
+esac
+
+#DEBHELPER#
+
+exit 0

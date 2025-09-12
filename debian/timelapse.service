@@ -1,0 +1,27 @@
+[Unit]
+Description=Raspberry Pi Timelapse Controller
+Documentation=https://github.com/ghollingworth/timelapse
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+User=timelapse
+Group=timelapse
+WorkingDirectory=/opt/timelapse
+Environment=PYTHONPATH=/opt/timelapse
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/usr/bin/python3 /opt/timelapse/app.py
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+# Security settings
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ReadWritePaths=/var/lib/timelapse
+
+[Install]
+WantedBy=multi-user.target
