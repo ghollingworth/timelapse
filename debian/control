@@ -15,7 +15,9 @@ Depends: ${misc:Depends},
          python3-picamera2,
          python3-opencv,
          ffmpeg,
-         adduser
+         adduser,
+         apache2,
+         libapache2-mod-wsgi-py3
 Description: Raspberry Pi Timelapse Controller
  Web application for creating timelapse videos with the Raspberry Pi camera.
  .
@@ -26,11 +28,11 @@ Description: Raspberry Pi Timelapse Controller
   - Multiple video formats and resolutions (1080p, 720p, 480p)
   - Real-time media gallery with auto-refresh
   - Camera orientation controls (horizontal/vertical flip)
-  - Systemd service for automatic startup
+  - Production deployment with Apache and mod_wsgi
  .
- The web interface is available at http://localhost:5000 after installation.
+ The web interface is available at http://localhost/ after installation.
  .
- Use standard systemctl commands to control the service:
-  systemctl start/stop/restart timelapse.service
-  systemctl status timelapse.service  
-  journalctl -u timelapse -f
+ Service management:
+  systemctl status apache2 - Check Apache status
+  systemctl restart apache2 - Restart application
+  tail -f /var/log/apache2/timelapse_error.log - View logs

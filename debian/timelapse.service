@@ -1,27 +1,15 @@
 [Unit]
-Description=Raspberry Pi Timelapse Controller
+Description=Raspberry Pi Timelapse Controller (Apache Integration)
 Documentation=https://github.com/ghollingworth/timelapse
-After=network.target
-Wants=network.target
+After=apache2.service
+Requires=apache2.service
+PartOf=apache2.service
 
 [Service]
-Type=simple
-User=timelapse
-Group=timelapse
-WorkingDirectory=/opt/timelapse
-Environment=PYTHONPATH=/opt/timelapse
-Environment=PYTHONUNBUFFERED=1
-ExecStart=/usr/bin/python3 /opt/timelapse/app.py
-Restart=always
-RestartSec=10
-StandardOutput=journal
-StandardError=journal
-
-# Security settings
-NoNewPrivileges=yes
-PrivateTmp=yes
-ProtectSystem=strict
-ReadWritePaths=/var/lib/timelapse
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/bin/true
+ExecReload=/bin/systemctl reload apache2.service
 
 [Install]
 WantedBy=multi-user.target

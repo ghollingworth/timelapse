@@ -52,6 +52,12 @@ override_dh_auto_install:
 	touch debian/timelapse-controller/opt/timelapse/static/images/.keep
 	touch debian/timelapse-controller/opt/timelapse/static/videos/.keep
 	
+	# Install WSGI file for Apache (executable)
+	install -m 755 timelapse.wsgi debian/timelapse-controller/opt/timelapse/
+	
+	# Install Apache site configuration
+	install -m 644 debian/timelapse-apache.conf debian/timelapse-controller/opt/timelapse/
+	
 	# Install systemd service
 	install -d debian/timelapse-controller/usr/lib/systemd/system
 	install -m 644 debian/timelapse.service debian/timelapse-controller/usr/lib/systemd/system/

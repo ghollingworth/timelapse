@@ -48,7 +48,7 @@ The installation will automatically:
 - Install application files to `/opt/timelapse/`
 - Create data directories in `/var/lib/timelapse/`
 - Enable and start the systemd service
-- Make the web interface available at http://localhost:5000
+- Configure Apache with mod_wsgi to serve the web interface at http://localhost/
 
 ## Usage
 
@@ -56,11 +56,11 @@ The installation will automatically:
 
 After installation, access the web interface at:
 ```
-http://localhost:5000
+http://localhost/
 ```
 Or from another device on your network:
 ```
-http://[raspberry-pi-ip]:5000
+http://[raspberry-pi-ip]/
 ```
 
 ### Service Management
@@ -68,20 +68,23 @@ http://[raspberry-pi-ip]:5000
 Control the timelapse service using standard systemctl commands:
 
 ```bash
-# Check service status
+# Check Apache status (timelapse runs under Apache)
+systemctl status apache2
+
+# Restart Apache (restarts the timelapse application)
+sudo systemctl restart apache2
+
+# Check timelapse service status (manages Apache integration)
 systemctl status timelapse.service
 
-# Start the service
-sudo systemctl start timelapse.service
+# View application logs
+sudo tail -f /var/log/apache2/timelapse_error.log
 
-# Stop the service
-sudo systemctl stop timelapse.service
+# View Apache access logs
+sudo tail -f /var/log/apache2/timelapse_access.log
 
-# Restart the service
-sudo systemctl restart timelapse.service
-
-# View logs
-journalctl -u timelapse -f
+# Test Apache configuration
+sudo apache2ctl configtest
 
 # Disable automatic startup
 sudo systemctl disable timelapse.service
@@ -162,7 +165,7 @@ sudo apt install python3-flask python3-picamera2 python3-opencv ffmpeg
 python3 app.py
 ```
 
-The web interface will be available at http://localhost:5000
+The web interface will be available at http://localhost/ (served by Apache with mod_wsgi)
 
 ## License
 

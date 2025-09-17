@@ -16,6 +16,13 @@ case "$1" in
             echo "To remove manually: sudo rm -rf /var/lib/timelapse"
         fi
         
+        # Clean up Apache configuration
+        rm -f /etc/apache2/sites-available/timelapse-apache.conf
+        a2dissite timelapse-apache >/dev/null 2>&1 || true
+        if [ -x /bin/systemctl ]; then
+            /bin/systemctl reload apache2 >/dev/null 2>&1 || true
+        fi
+        
         # Clean up systemd (handled by debhelper)
         deb-systemd-helper purge timelapse.service >/dev/null || true
         ;;

@@ -81,6 +81,16 @@ class Config:
                 config_file = "/var/lib/timelapse/config/timelapse_config.json"
             else:
                 config_file = "timelapse_config.json"
+            # Use system config path if running as service, otherwise local
+            if os.path.exists("/var/lib/timelapse"):
+                config_file = "/var/lib/timelapse/config/timelapse_config.json"
+            else:
+                config_file = "timelapse_config.json"
+            # Use system config path if running as service, otherwise local
+            if os.path.exists("/var/lib/timelapse"):
+                config_file = "/var/lib/timelapse/config/timelapse_config.json"
+            else:
+                config_file = "timelapse_config.json"
         self.config_file = config_file
         self._config = self.load()
     

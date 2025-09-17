@@ -47,16 +47,38 @@ EOF
     chmod 644 /var/lib/timelapse/config/timelapse_config.json
 fi
 
-# Enable and start systemd service (handled by debhelper)
+# Configure Apache with mod_wsgi
 if [ "$1" = "configure" ]; then
+    # Enable required Apache modules
+    a2enmod wsgi >/dev/null 2>&1 || true
+    a2enmod headers >/dev/null 2>&1 || true
+    
+    # Copy and enable the site configuration
+    cp /opt/timelapse/timelapse-apache.conf /etc/apache2/sites-available/ 2>/dev/null || true
+    a2ensite timelapse-apache >/dev/null 2>&1 || true
+    
+    # Disable default site if it's enabled (optional)
+    a2dissite 000-default >/dev/null 2>&1 || true
+    
+    # Test Apache configuration
+    apache2ctl configtest >/dev/null 2>&1 || echo "Warning: Apache configuration test failed"
+    
+    # Enable and start Apache (use debhelper methods)
+    if [ -x /bin/systemctl ]; then
+        /bin/systemctl enable apache2 >/dev/null 2>&1 || true
+        /bin/systemctl reload apache2 >/dev/null 2>&1 || true
+    fi
+    
+    # Enable our service (which now just depends on Apache)
     deb-systemd-helper enable timelapse.service >/dev/null || true
     deb-systemd-invoke start timelapse.service >/dev/null || true
 fi
 
 echo "Timelapse Controller installed successfully!"
-echo "Web interface available at: http://localhost:5000"
-echo "Use 'systemctl status timelapse.service' to check service status"
-echo "Use 'journalctl -u timelapse -f' to view logs"
+echo "Web interface available at: http://localhost/ (Apache with mod_wsgi)"
+echo "Use 'systemctl status apache2' to check Apache status"
+echo "Use 'tail -f /var/log/apache2/timelapse_error.log' to view application logs"
+echo "Use 'apache2ctl configtest' to test configuration"
 
 #DEBHELPER#
 
