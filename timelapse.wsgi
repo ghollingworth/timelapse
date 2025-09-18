@@ -16,6 +16,9 @@ os.chdir('/opt/timelapse')
 # Import the Flask application
 from app import app as application
 
+# Configure Flask app for URL prefix
+application.config['APPLICATION_ROOT'] = '/timelapse'
+
 # Ensure proper initialization for WSGI environment
 if __name__ != '__main__':
     # When running under WSGI, we need to ensure the timelapse app is properly initialized

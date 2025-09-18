@@ -75,7 +75,7 @@ if [ "$1" = "configure" ]; then
 fi
 
 echo "Timelapse Controller installed successfully!"
-echo "Web interface available at: http://localhost/ (Apache with mod_wsgi)"
+echo "Web interface available at: http://localhost/timelapse (Apache with mod_wsgi)"
 echo "Use 'systemctl status apache2' to check Apache status"
 echo "Use 'tail -f /var/log/apache2/timelapse_error.log' to view application logs"
 echo "Use 'apache2ctl configtest' to test configuration"

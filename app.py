@@ -112,7 +112,7 @@ class TimelapseApp:
             
             # Use appropriate URL based on installation type
             if USE_SYSTEM_PATHS:
-                url = f'/media/images/{filename}'
+                url = f'/timelapse/media/images/{filename}'
             else:
                 url = f'/static/images/{filename}'
                 
@@ -164,7 +164,7 @@ class TimelapseApp:
                     stat = os.stat(filepath)
                     # Use appropriate URL based on installation type
                     if USE_SYSTEM_PATHS:
-                        url = f'/media/images/{filename}'
+                        url = f'/timelapse/media/images/{filename}'
                     else:
                         url = f'/static/images/{filename}'
                     
@@ -192,7 +192,7 @@ class TimelapseApp:
                     stat = os.stat(filepath)
                     # Use appropriate URL based on installation type
                     if USE_SYSTEM_PATHS:
-                        url = f'/media/videos/{filename}'
+                        url = f'/timelapse/media/videos/{filename}'
                     else:
                         url = f'/static/videos/{filename}'
                         

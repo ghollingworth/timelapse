@@ -30,7 +30,7 @@ Description: Raspberry Pi Timelapse Controller
   - Camera orientation controls (horizontal/vertical flip)
   - Production deployment with Apache and mod_wsgi
  .
- The web interface is available at http://localhost/ after installation.
+ The web interface is available at http://localhost/timelapse after installation.
  .
  Service management:
   systemctl status apache2 - Check Apache status

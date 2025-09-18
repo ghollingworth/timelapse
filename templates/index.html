@@ -524,6 +524,9 @@
     </div>
 
     <script>
+        // Base URL for API calls when served under /timelapse path
+        const BASE_URL = '/timelapse';
+        
         let currentMainTab = 'controls';
         let currentTab = 'images';
         let statusInterval;
@@ -669,7 +672,7 @@
 
         async function loadStatus() {
             try {
-                const response = await fetch('/api/status');
+                const response = await fetch(BASE_URL + '/api/status');
                 const data = await response.json();
                 
                 const statusText = document.getElementById('status-text');
@@ -689,7 +692,7 @@
 
         async function startTimelapse() {
             try {
-                const response = await fetch('/api/start', { method: 'POST' });
+                const response = await fetch(BASE_URL + '/api/start', { method: 'POST' });
                 const data = await response.json();
                 
                 if (data.status === 'success') {
@@ -705,7 +708,7 @@
 
         async function stopTimelapse() {
             try {
-                const response = await fetch('/api/stop', { method: 'POST' });
+                const response = await fetch(BASE_URL + '/api/stop', { method: 'POST' });
                 const data = await response.json();
                 
                 if (data.status === 'success') {
@@ -721,7 +724,7 @@
 
         async function captureSingle() {
             try {
-                const response = await fetch('/api/capture', { method: 'POST' });
+                const response = await fetch(BASE_URL + '/api/capture', { method: 'POST' });
                 const data = await response.json();
                 
                 if (data.status === 'success') {
@@ -769,7 +772,7 @@
             }
             
             try {
-                const response = await fetch('/api/config', {
+                const response = await fetch(BASE_URL + '/api/config', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -792,7 +795,7 @@
 
         async function loadImages() {
             try {
-                const response = await fetch('/api/images');
+                const response = await fetch(BASE_URL + '/api/images');
                 const images = await response.json();
                 
                 const grid = document.getElementById('images-grid');
@@ -820,7 +823,7 @@
 
         async function loadVideos() {
             try {
-                const response = await fetch('/api/videos');
+                const response = await fetch(BASE_URL + '/api/videos');
                 const videos = await response.json();
                 
                 const grid = document.getElementById('videos-grid');
@@ -877,7 +880,7 @@
 
         async function generateVideo() {
             try {
-                const response = await fetch('/api/generate-video', { method: 'POST' });
+                const response = await fetch(BASE_URL + '/api/generate-video', { method: 'POST' });
                 const data = await response.json();
                 
                 if (data.status === 'success') {
@@ -897,7 +900,7 @@
             }
             
             try {
-                const response = await fetch('/api/delete-images', { method: 'POST' });
+                const response = await fetch(BASE_URL + '/api/delete-images', { method: 'POST' });
                 const data = await response.json();
                 
                 if (data.status === 'success') {
