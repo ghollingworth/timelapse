@@ -64,10 +64,8 @@ if [ "$1" = "configure" ]; then
     apache2ctl configtest >/dev/null 2>&1 || echo "Warning: Apache configuration test failed"
     
     # Enable and start Apache (use debhelper methods)
-    if [ -x /bin/systemctl ]; then
-        /bin/systemctl enable apache2 >/dev/null 2>&1 || true
-        /bin/systemctl reload apache2 >/dev/null 2>&1 || true
-    fi
+    deb-systemd-helper enable apache2 >/dev/null 2>&1 || true
+    deb-systemd-invoke restart apache2 >/dev/null 2>&1 || true
     
     # Enable our service (which now just depends on Apache)
     deb-systemd-helper enable timelapse.service >/dev/null || true

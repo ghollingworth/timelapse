@@ -8,9 +8,7 @@ case "$1" in
         
         # Disable Apache site
         a2dissite timelapse-apache >/dev/null 2>&1 || true
-        if [ -x /bin/systemctl ]; then
-            /bin/systemctl reload apache2 >/dev/null 2>&1 || true
-        fi
+        deb-systemd-helper restart apache2 >/dev/null 2>&1 || true
         ;;
     upgrade)
         # Don't stop service during upgrade

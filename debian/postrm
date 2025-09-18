@@ -19,12 +19,8 @@ case "$1" in
         # Clean up Apache configuration
         rm -f /etc/apache2/sites-available/timelapse-apache.conf
         a2dissite timelapse-apache >/dev/null 2>&1 || true
-        if [ -x /bin/systemctl ]; then
-            /bin/systemctl reload apache2 >/dev/null 2>&1 || true
-        fi
+        deb-systemd-helper restart apache2 >/dev/null 2>&1 || true
         
-        # Clean up systemd (handled by debhelper)
-        deb-systemd-helper purge timelapse.service >/dev/null || true
         ;;
     remove|upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)
         ;;
