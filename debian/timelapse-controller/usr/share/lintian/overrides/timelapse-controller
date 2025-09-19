@@ -1,7 +1,0 @@
-# Override for files in /opt - this is a self-contained web application
-timelapse-controller: dir-or-file-in-opt *
-
-# Override for non-executable Python scripts - these are libraries, not executables
-timelapse-controller: script-not-executable [opt/timelapse/app.py]
-timelapse-controller: script-not-executable [opt/timelapse/camera.py] 
-timelapse-controller: script-not-executable [opt/timelapse/config.py]

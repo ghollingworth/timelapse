@@ -7,34 +7,8 @@ export DH_VERBOSE = 1
 %:
 	dh $@
 
-# Update paths in the Python files for system installation
+# Source files already contain system path detection logic
 override_dh_auto_build:
-	# Update config.py to use system paths
-	sed -i '/def __init__(self, config_file=.*):$$/,+1c\    def __init__(self, config_file=None):\
-        if config_file is None:\
-            # Use system config path if running as service, otherwise local\
-            if os.path.exists("/var/lib/timelapse"):\
-                config_file = "/var/lib/timelapse/config/timelapse_config.json"\
-            else:\
-                config_file = "timelapse_config.json"' config.py
-	
-	# Update app.py to use system paths
-	sed -i '/^IMAGES_DIR = /c\# Constants - Use system paths if available, otherwise local\
-if os.path.exists("/var/lib/timelapse"):\
-    IMAGES_DIR = "/var/lib/timelapse/images"\
-    VIDEOS_DIR = "/var/lib/timelapse/videos"\
-else:\
-    IMAGES_DIR = "static/images"\
-    VIDEOS_DIR = "static/videos"' app.py
-	
-	# Update camera.py to use system paths
-	sed -i 's/images_dir: str = .*/images_dir: str = None):/' camera.py
-	sed -i '/# Ensure directory exists/i\        # Use system path if available, otherwise local\
-        if images_dir is None:\
-            if os.path.exists("/var/lib/timelapse"):\
-                images_dir = "/var/lib/timelapse/images"\
-            else:\
-                images_dir = "static/images"' camera.py
 
 # Skip tests for now (no tests implemented yet)
 override_dh_auto_test:
