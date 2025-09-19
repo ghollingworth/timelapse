@@ -1,0 +1,179 @@
+# Debian package build artifacts
+debian/timelapse-controller/
+debian/timelapse-controller*
+debian/*.deb
+debian/*.changes
+debian/*.buildinfo
+debian/*.dsc
+debian/*.tar.gz
+debian/*.upload
+debian/files
+debian/.debhelper/
+debian/debhelper-build-stamp
+debian/tmp/
+
+# Debian source package artifacts
+*.orig.tar.gz
+*.orig.tar.xz
+*.debian.tar.gz
+*.debian.tar.xz
+
+# Build directories and logs
+build/
+dist/
+.build/
+debian/build/
+
+# Python artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+.venv/
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
+
+# pyenv
+.python-version
+
+# pipenv
+Pipfile.lock
+
+# PEP 582
+__pypackages__/
+
+# Celery stuff
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath parsed files
+*.sage.py
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# pytype static type analyzer
+.pytype/
+
+# Cython debug symbols
+cython_debug/
+
+# Timelapse application specific
+# Runtime generated media files (but keep directory structure)
+static/images/*.jpg
+static/videos/*.mp4
+/var/lib/timelapse/images/*.jpg
+/var/lib/timelapse/videos/*.mp4
+
+# Configuration files with potentially sensitive data
+timelapse_config.json
+/var/lib/timelapse/config/timelapse_config.json
+
+# Log files
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE specific files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS specific files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
