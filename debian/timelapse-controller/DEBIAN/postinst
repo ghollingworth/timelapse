@@ -1,0 +1,113 @@
+#!/bin/bash
+set -e
+
+# Create timelapse user if it doesn't exist
+if ! getent passwd timelapse >/dev/null 2>&1; then
+    adduser --system --group --home /var/lib/timelapse --shell /usr/sbin/nologin timelapse
+    echo "Created timelapse system user"
+fi
+
+# Create data directories with proper permissions
+mkdir -p /var/lib/timelapse/{images,videos,config}
+chown timelapse:timelapse /var/lib/timelapse
+chown timelapse:timelapse /var/lib/timelapse/images
+chown timelapse:timelapse /var/lib/timelapse/videos  
+chown timelapse:timelapse /var/lib/timelapse/config
+chmod 755 /var/lib/timelapse
+chmod 755 /var/lib/timelapse/{images,videos,config}
+
+# Set application permissions (ownership handled by dpkg)
+chmod 755 /opt/timelapse
+chmod 644 /opt/timelapse/*.py
+chmod 755 /opt/timelapse/video_generator.py
+
+# Add timelapse user to video group for camera access
+usermod -a -G video timelapse
+
+# Create config file if it doesn't exist
+if [ ! -f /var/lib/timelapse/config/timelapse_config.json ]; then
+    cat > /var/lib/timelapse/config/timelapse_config.json << 'EOF'
+{
+    "interval": 5,
+    "resolution": "1920x1080",
+    "quality": 95,
+    "auto_generate_video": true,
+    "auto_delete_images": false,
+    "video_fps": 30,
+    "video_quality": 23,
+    "video_method": "ffmpeg",
+    "scheduled_video_creation": false,
+    "daily_video_time": "18:00",
+    "hflip": false,
+    "vflip": false,
+    "is_running": false
+}
+EOF
+    chown timelapse:timelapse /var/lib/timelapse/config/timelapse_config.json
+    chmod 644 /var/lib/timelapse/config/timelapse_config.json
+fi
+
+# Configure Apache with mod_wsgi
+if [ "$1" = "configure" ]; then
+    # Enable required Apache modules
+    a2enmod wsgi >/dev/null 2>&1 || true
+    a2enmod headers >/dev/null 2>&1 || true
+    
+    # Copy and enable the site configuration
+    cp /opt/timelapse/timelapse-apache.conf /etc/apache2/sites-available/ 2>/dev/null || true
+    a2ensite timelapse-apache >/dev/null 2>&1 || true
+    
+    # Disable default site if it's enabled (optional)
+    a2dissite 000-default >/dev/null 2>&1 || true
+    
+    # Test Apache configuration
+    apache2ctl configtest >/dev/null 2>&1 || echo "Warning: Apache configuration test failed"
+    
+    # Enable and start Apache (use debhelper methods)
+    deb-systemd-helper enable apache2 >/dev/null 2>&1 || true
+    deb-systemd-invoke restart apache2 >/dev/null 2>&1 || true
+    
+    # Enable our service (which now just depends on Apache)
+    deb-systemd-helper enable timelapse.service >/dev/null || true
+    deb-systemd-invoke start timelapse.service >/dev/null || true
+fi
+
+echo "Timelapse Controller installed successfully!"
+echo "Web interface available at: http://localhost/timelapse (Apache with mod_wsgi)"
+echo "Use 'systemctl status apache2' to check Apache status"
+echo "Use 'tail -f /var/log/apache2/timelapse_error.log' to view application logs"
+echo "Use 'apache2ctl configtest' to test configuration"
+
+# Automatically added by dh_installsystemd/13.24.2
+if [ "$1" = "configure" ] || [ "$1" = "abort-upgrade" ] || [ "$1" = "abort-deconfigure" ] || [ "$1" = "abort-remove" ] ; then
+	# The following line should be removed in trixie or trixie+1
+	deb-systemd-helper unmask 'timelapse.service' >/dev/null || true
+
+	# was-enabled defaults to true, so new installations run enable.
+	if deb-systemd-helper --quiet was-enabled 'timelapse.service'; then
+		# Enables the unit on first installation, creates new
+		# symlinks on upgrades if the unit file has changed.
+		deb-systemd-helper enable 'timelapse.service' >/dev/null || true
+	else
+		# Update the statefile to add new symlinks (if any), which need to be
+		# cleaned up on purge. Also remove old symlinks.
+		deb-systemd-helper update-state 'timelapse.service' >/dev/null || true
+	fi
+fi
+# End automatically added section
+# Automatically added by dh_installsystemd/13.24.2
+if [ "$1" = "configure" ] || [ "$1" = "abort-upgrade" ] || [ "$1" = "abort-deconfigure" ] || [ "$1" = "abort-remove" ] ; then
+	if [ -d /run/systemd/system ]; then
+		systemctl --system daemon-reload >/dev/null || true
+		if [ -n "$2" ]; then
+			_dh_action=restart
+		else
+			_dh_action=start
+		fi
+		deb-systemd-invoke $_dh_action 'timelapse.service' >/dev/null || true
+	fi
+fi
+# End automatically added section
+
+
+exit 0

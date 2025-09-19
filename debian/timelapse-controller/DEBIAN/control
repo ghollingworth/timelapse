@@ -1,0 +1,27 @@
+Package: timelapse-controller
+Version: 1.0.0
+Architecture: all
+Maintainer: Gordon Hollingworth <gordon@raspberrypi.com>
+Installed-Size: 121
+Depends: python3, python3-flask, python3-picamera2, python3-opencv, ffmpeg, adduser, apache2, libapache2-mod-wsgi-py3
+Section: utils
+Priority: optional
+Homepage: https://github.com/ghollingworth/timelapse
+Description: Raspberry Pi Timelapse Controller
+ Web application for creating timelapse videos with the Raspberry Pi camera.
+ .
+ Features include:
+  - Web-based control interface with three-tab layout
+  - Automatic video generation with FFmpeg or OpenCV
+  - Scheduled daily video creation
+  - Multiple video formats and resolutions (1080p, 720p, 480p)
+  - Real-time media gallery with auto-refresh
+  - Camera orientation controls (horizontal/vertical flip)
+  - Production deployment with Apache and mod_wsgi
+ .
+ The web interface is available at http://localhost/timelapse
+ .
+ Service management:
+  systemctl status apache2 - Check Apache status
+  systemctl restart apache2 - Restart application
+  tail -f /var/log/apache2/timelapse_error.log - View logs

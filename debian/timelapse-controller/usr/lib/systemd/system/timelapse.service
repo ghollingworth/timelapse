@@ -1,0 +1,15 @@
+[Unit]
+Description=Raspberry Pi Timelapse Controller (Apache Integration)
+Documentation=https://github.com/ghollingworth/timelapse
+After=apache2.service
+Requires=apache2.service
+PartOf=apache2.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/bin/true
+ExecReload=/bin/systemctl reload apache2.service
+
+[Install]
+WantedBy=multi-user.target

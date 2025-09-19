@@ -1,0 +1,13 @@
+0a98a571c8e885277893f168e7dfe36d  opt/timelapse/app.py
+923fd5aeda7bc60560fc6c76a2bb7c3d  opt/timelapse/camera.py
+d46b4e3f03bd4983495693620784da0d  opt/timelapse/config.py
+d41d8cd98f00b204e9800998ecf8427e  opt/timelapse/static/images/.keep
+d41d8cd98f00b204e9800998ecf8427e  opt/timelapse/static/videos/.keep
+71463a8730a70a76df71a75da49d6b50  opt/timelapse/templates/index.html
+ce29e74f3fbce2fedd12f362220acb9d  opt/timelapse/timelapse-apache.conf
+469777d5a8cb09ea9626da8d52d1f798  opt/timelapse/timelapse.wsgi
+bbe36f7e62b2c42e299f2ca1a6164b9e  opt/timelapse/video_generator.py
+8030bf6002289759bc41c2d92264fac7  usr/lib/systemd/system/timelapse.service
+5b5a57bcb27cc9290d557e8ab23dfca0  usr/share/doc/timelapse-controller/changelog.gz
+d248db73ead137c5636565c0a2c1fbcd  usr/share/doc/timelapse-controller/copyright
+d562dd1cd9b09615bdca9d855d01e57d  usr/share/lintian/overrides/timelapse-controller
