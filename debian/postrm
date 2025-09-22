@@ -1,13 +1,14 @@
 #!/bin/bash
 set -e
 
+# Function to check if systemd is available and running
+is_systemd_available() {
+    # Check if systemd is running (PID 1) and systemctl is available
+    [ -d /run/systemd/system ] && command -v systemctl >/dev/null 2>&1
+}
+
 case "$1" in
     purge)
-        # Remove user and data on purge
-        if getent passwd timelapse >/dev/null 2>&1; then
-            deluser --quiet timelapse || true
-            echo "Removed timelapse user"
-        fi
         
         # Remove data directory only if explicitly requested via debconf
         # For now, preserve data by default to prevent accidental loss
@@ -19,8 +20,26 @@ case "$1" in
         # Clean up Apache configuration
         rm -f /etc/apache2/sites-available/timelapse-apache.conf
         a2dissite timelapse-apache >/dev/null 2>&1 || true
-        deb-systemd-helper restart apache2 >/dev/null 2>&1 || true
         
+        # Restart Apache based on available init system
+        if is_systemd_available; then
+            systemctl reload apache2 >/dev/null 2>&1 || true
+        else
+            if command -v service >/dev/null 2>&1; then
+                service apache2 restart >/dev/null 2>&1 || true
+            elif command -v invoke-rc.d >/dev/null 2>&1; then
+                invoke-rc.d apache2 restart >/dev/null 2>&1 || true
+            else
+                /etc/init.d/apache2 restart >/dev/null 2>&1 || true
+            fi
+        fi
+
+        # Remove user and data on purge
+        if getent passwd timelapse >/dev/null 2>&1; then
+            deluser --quiet timelapse || true
+            echo "Removed timelapse user"
+        fi
+
         ;;
     remove|upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)
         ;;

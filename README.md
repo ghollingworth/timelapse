@@ -74,9 +74,6 @@ systemctl status apache2
 # Restart Apache (restarts the timelapse application)
 sudo systemctl restart apache2
 
-# Check timelapse service status (manages Apache integration)
-systemctl status timelapse.service
-
 # View application logs
 sudo tail -f /var/log/apache2/timelapse_error.log
 
@@ -85,9 +82,6 @@ sudo tail -f /var/log/apache2/timelapse_access.log
 
 # Test Apache configuration
 sudo apache2ctl configtest
-
-# Disable automatic startup
-sudo systemctl disable timelapse.service
 ```
 
 ## Web Interface

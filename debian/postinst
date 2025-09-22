@@ -47,6 +47,12 @@ EOF
     chmod 644 /var/lib/timelapse/config/timelapse_config.json
 fi
 
+# Function to check if systemd is available and running
+is_systemd_available() {
+    # Check if systemd is running (PID 1) and systemctl is available
+    [ -d /run/systemd/system ] && command -v systemctl >/dev/null 2>&1
+}
+
 # Configure Apache with mod_wsgi
 if [ "$1" = "configure" ]; then
     # Enable required Apache modules
@@ -63,20 +69,41 @@ if [ "$1" = "configure" ]; then
     # Test Apache configuration
     apache2ctl configtest >/dev/null 2>&1 || echo "Warning: Apache configuration test failed"
     
-    # Enable and start Apache (use debhelper methods)
-    deb-systemd-helper enable apache2 >/dev/null 2>&1 || true
-    deb-systemd-invoke restart apache2 >/dev/null 2>&1 || true
-    
-    # Enable our service (which now just depends on Apache)
-    deb-systemd-helper enable timelapse.service >/dev/null || true
-    deb-systemd-invoke start timelapse.service >/dev/null || true
+    # Handle Apache service management based on available init system
+    if is_systemd_available; then
+        echo "Using systemd for service management"
+        deb-systemd-helper enable apache2 >/dev/null 2>&1 || true
+        deb-systemd-invoke restart apache2 >/dev/null 2>&1 || true
+    else
+        echo "Using traditional init system for service management"
+        if command -v service >/dev/null 2>&1; then
+            service apache2 restart >/dev/null 2>&1 || true
+        elif command -v invoke-rc.d >/dev/null 2>&1; then
+            invoke-rc.d apache2 restart >/dev/null 2>&1 || true
+        else
+            /etc/init.d/apache2 restart >/dev/null 2>&1 || true
+        fi
+    fi
 fi
 
 echo "Timelapse Controller installed successfully!"
 echo "Web interface available at: http://localhost/timelapse (Apache with mod_wsgi)"
-echo "Use 'systemctl status apache2' to check Apache status"
-echo "Use 'tail -f /var/log/apache2/timelapse_error.log' to view application logs"
-echo "Use 'apache2ctl configtest' to test configuration"
+
+# Provide appropriate management commands based on init system
+if is_systemd_available; then
+    echo "Service management:"
+    echo "  systemctl status apache2    - Check status"
+    echo "  systemctl restart apache2   - Restart application"
+    echo "  systemctl reload apache2    - Reload configuration"
+else
+    echo "Service management:"
+    echo "  service apache2 status      - Check status"
+    echo "  service apache2 restart     - Restart application"
+    echo "  service apache2 reload      - Reload configuration"
+fi
+
+echo "Logs: tail -f /var/log/apache2/timelapse_error.log"
+echo "Config test: apache2ctl configtest"
 
 #DEBHELPER#
 

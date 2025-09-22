@@ -1,14 +1,29 @@
 #!/bin/bash
 set -e
 
+# Function to check if systemd is available and running
+is_systemd_available() {
+    # Check if systemd is running (PID 1) and systemctl is available
+    [ -d /run/systemd/system ] && command -v systemctl >/dev/null 2>&1
+}
+
 case "$1" in
     remove|deconfigure)
-        # Stop service (handled by debhelper)  
-        deb-systemd-invoke stop timelapse.service >/dev/null || true
-        
         # Disable Apache site
         a2dissite timelapse-apache >/dev/null 2>&1 || true
-        deb-systemd-helper restart apache2 >/dev/null 2>&1 || true
+        
+        # Restart Apache based on available init system
+        if is_systemd_available; then
+            deb-systemd-helper restart apache2 >/dev/null 2>&1 || true
+        else
+            if command -v service >/dev/null 2>&1; then
+                service apache2 restart >/dev/null 2>&1 || true
+            elif command -v invoke-rc.d >/dev/null 2>&1; then
+                invoke-rc.d apache2 restart >/dev/null 2>&1 || true
+            else
+                /etc/init.d/apache2 restart >/dev/null 2>&1 || true
+            fi
+        fi
         ;;
     upgrade)
         # Don't stop service during upgrade

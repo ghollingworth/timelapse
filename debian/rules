@@ -32,12 +32,6 @@ override_dh_auto_install:
 	# Install Apache site configuration
 	install -m 644 debian/timelapse-apache.conf debian/timelapse-controller/opt/timelapse/
 	
-	# Install systemd service
-	install -d debian/timelapse-controller/usr/lib/systemd/system
-	install -m 644 debian/timelapse.service debian/timelapse-controller/usr/lib/systemd/system/
-	
-	
-	
 	# Install lintian overrides
 	install -d debian/timelapse-controller/usr/share/lintian/overrides
 	install -m 644 debian/lintian-overrides debian/timelapse-controller/usr/share/lintian/overrides/timelapse-controller
